@@ -4,7 +4,7 @@ from django.db import models
 
 class Book(models.Model):
     name = models.CharField(max_length=100)
-    author_name = models.CharField(max_length=100)
+    author = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     isbn = models.CharField(max_length=100, blank=True, null=True)
     publisher = models.CharField(max_length=100, blank=True, null=True)
@@ -18,9 +18,12 @@ class Book(models.Model):
 
 
 class Review(models.Model):
-    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='reviews')
     date_time = models.DateTimeField(auto_now_add=True)
     review = models.TextField(blank=True, null=True)
+
+    def __str__(self) -> str:
+        return self.review
 
 
 class Rating(models.Model):
