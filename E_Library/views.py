@@ -9,7 +9,7 @@ from django.core.files.storage import default_storage
 # Create your views here.
 
 class BookViewSet(viewsets.ModelViewSet):
-    queryset = Book.objects.all()
+    queryset = Book.objects.prefetch_related('reviews').all()
     serializer_class = BookSerializer
 
     def destroy(self, request, *args, **kwargs):
