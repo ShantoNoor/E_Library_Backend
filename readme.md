@@ -12,3 +12,12 @@ pip install -r requirements.txt
 ```bash
 python manage.py runserver
 ```
+
+# Creating SuperUser
+```bash
+python manage.py createsuperuser
+```
+
+# Already Created SuperUser
+    - `username:` `admin`
+    - `password:` `admin`
