@@ -13,12 +13,18 @@ class BookViewSet(viewsets.ModelViewSet):
     serializer_class = BookSerializer
 
     def destroy(self, request, *args, **kwargs):
-        book = Book.objects.filter(id=kwargs['pk'])
         instance = self.get_object()
+        
         if instance.cover_photo:
             file_path = instance.cover_photo.path
             if default_storage.exists(file_path):
                 default_storage.delete(file_path)
+        
+        if instance.pdf:
+            file_path = instance.pdf.path
+            if default_storage.exists(file_path):
+                default_storage.delete(file_path)
+
         return super().destroy(request, *args, **kwargs)
 
 
@@ -27,6 +33,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Review.objects.filter(book_id=self.kwargs['book_pk'])
-
+    
     def get_serializer_context(self):
-        return {'book_id': self.kwargs['book_pk']}
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        context.update({'book_id': self.kwargs['book_pk']})
+        return context

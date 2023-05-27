@@ -6,10 +6,21 @@ from django.core.validators import FileExtensionValidator
 PROFILE_ADMIN = 'A'
 PROFILE_MODERATOR = 'M'
 PROFILE_USER = 'U'
+PROFILE_CHOICES = {
+        (PROFILE_ADMIN, 'Admin'),
+        (PROFILE_MODERATOR, 'Moderator'),
+        (PROFILE_USER, 'User'),
+    }
 
-STATUS_PENDING = 'PD'
-STATUS_PUBLISHED = 'PS'
-STATUS_REJECTED = 'RJ'
+STATUS_PENDING = 'Pending'
+STATUS_PUBLISHED = 'Published'
+STATUS_REJECTED = 'Rejected'
+STATUS_CHOICES = {
+        (STATUS_PENDING, STATUS_PENDING),
+        (STATUS_PUBLISHED, STATUS_PUBLISHED),
+        (STATUS_REJECTED, STATUS_REJECTED),
+    }
+
 
 # Create your models here.
 
@@ -20,12 +31,6 @@ class User(AbstractUser):
     
 
 class UserProfile(models.Model):
-    PROFILE_CHOICES = {
-        (PROFILE_ADMIN, 'Admin'),
-        (PROFILE_MODERATOR, 'Moderator'),
-        (PROFILE_USER, 'User'),
-    }
-
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     profile_picture = models.ImageField(upload_to='profile_pictures', blank=True, null=True)
     phone = models.CharField(max_length=12)
@@ -50,12 +55,6 @@ class UserProfile(models.Model):
 
 
 class Book(models.Model):
-    STATUS_CHOICES = {
-        (STATUS_PENDING, 'Pending'),
-        (STATUS_PUBLISHED, 'Published'),
-        (STATUS_REJECTED, 'Rejected'),
-    }
-
     name = models.CharField(max_length=100)
     author = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
@@ -72,7 +71,7 @@ class Book(models.Model):
         ]
     )
     book_status = models.CharField(
-        max_length=2, choices=STATUS_CHOICES, default=PROFILE_USER
+        max_length=9, choices=STATUS_CHOICES, default=STATUS_PENDING
     )
 
     def __str__(self) -> str:
@@ -94,3 +93,6 @@ class Rating(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='ratings')
     date_time = models.DateTimeField(auto_now=True)
     rating = models.DecimalField(max_digits=2, decimal_places=2)
+
+    def __str__(self) -> str:
+        return f'{self.user.first_name} {self.user.last_name} - {self.rating}'
