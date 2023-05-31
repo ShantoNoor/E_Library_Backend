@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib import admin
-from django.core.validators import FileExtensionValidator
+from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator
 
 PROFILE_ADMIN = 'A'
 PROFILE_MODERATOR = 'M'
@@ -60,6 +60,7 @@ class Book(models.Model):
     description = models.TextField(blank=True, null=True)
     isbn = models.CharField(max_length=100, blank=True, null=True)
     views = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
     publisher = models.CharField(max_length=100, blank=True, null=True)
     publish_date = models.DateField(blank=True, null=True)
     language = models.CharField(max_length=100, blank=True, null=True)
@@ -73,6 +74,7 @@ class Book(models.Model):
     book_status = models.CharField(
         max_length=9, choices=STATUS_CHOICES, default=STATUS_PENDING
     )
+    added_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='books')
 
     def __str__(self) -> str:
         return self.name
@@ -81,8 +83,11 @@ class Book(models.Model):
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='reviews')
-    date_time = models.DateTimeField(auto_now_add=True)
+    date_time = models.DateTimeField(auto_now=True)
     review = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        unique_together = ('user', 'book')
 
     def __str__(self) -> str:
         return self.review
@@ -92,7 +97,13 @@ class Rating(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ratings')
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='ratings')
     date_time = models.DateTimeField(auto_now=True)
-    rating = models.DecimalField(max_digits=2, decimal_places=2)
+    rating = models.IntegerField(blank=False, null=False, validators=[
+        MaxValueValidator(5),
+        MinValueValidator(1)
+    ])
+
+    class Meta:
+        unique_together = ('user', 'book')
 
     def __str__(self) -> str:
         return f'{self.user.first_name} {self.user.last_name} - {self.rating}'

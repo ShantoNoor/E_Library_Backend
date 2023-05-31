@@ -18,7 +18,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-admin.site.site_header = 'E Library Admin'
+admin.site.site_header = 'Learn Sunnah Admin'
 admin.site.index_title = 'Admin'
 
 urlpatterns = [

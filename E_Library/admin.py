@@ -1,18 +1,18 @@
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
 from django.urls import reverse
 from django.utils.html import format_html
 from django.contrib.auth.models import Group
 from .models import (Book, Rating, Review, User, UserProfile,
-                     PROFILE_ADMIN, PROFILE_MODERATOR, PROFILE_USER)
+                     PROFILE_ADMIN, PROFILE_MODERATOR, PROFILE_USER, STATUS_PUBLISHED, STATUS_PENDING, STATUS_REJECTED)
 
 
 GROUP_MODERATOR = Group.objects.get(name='Moderator')
 
 # Register your models here.
-admin.site.register(Book)
 admin.site.register(Rating)
 admin.site.register(Review)
 
@@ -60,3 +60,18 @@ class UserProfileAdmin(admin.ModelAdmin):
             user.save()
 
         return super().save_form(request, form, change)
+
+
+@admin.register(Book)
+class BookProfileAdmin(admin.ModelAdmin):
+    list_display = ['name', 'author', 'added_by', 'book_status']
+    list_editable = ['book_status']
+    list_per_page = 10
+    ordering = ['name']
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
+        qs1 = Book.objects.filter(book_status=STATUS_PENDING).all().order_by('-created_at')
+        qs2 = Book.objects.filter(book_status=STATUS_PUBLISHED).all().order_by('-created_at')
+        qs3 = Book.objects.filter(book_status=STATUS_REJECTED).all().order_by('-created_at')
+        # qs = qs1.union(qs2)
+        return qs1 | qs2 |qs3
